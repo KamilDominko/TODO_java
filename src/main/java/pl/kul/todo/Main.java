@@ -1,3 +1,5 @@
+package pl.kul.todo;
+
 import javax.swing.*;
 
 public class Main {

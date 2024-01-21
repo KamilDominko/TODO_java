@@ -1,8 +1,8 @@
-package components;
+package pl.kul.todo.components;
 
-import constants.CommonConstans;
-import utils.FontsManager;
-import utils.JsonFileManager;
+import pl.kul.todo.constants.CommonConstans;
+import pl.kul.todo.utils.FontsManager;
+import pl.kul.todo.utils.JsonFileManager;
 
 import javax.swing.*;
 import java.awt.*;
@@ -29,7 +29,7 @@ public class TaskComponent extends JPanel implements ActionListener {
     public TaskComponent(JPanel parentPanel, HashMap<String, String> task) {
         this.parentPanel = parentPanel;
         this.task = task;
-        jsonFileManager = new JsonFileManager(CommonConstans.TODOS_DATA_FILE_PATH);
+        jsonFileManager = new JsonFileManager(TaskComponent.class.getClassLoader().getResource("data/todos.json").getPath());
 
         // pole zadania
         taskLabel = new JLabel();

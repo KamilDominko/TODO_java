@@ -1,5 +1,7 @@
+package pl.kul.todo;
+
 import org.junit.jupiter.api.Test;
-import utils.FontsManager;
+import pl.kul.todo.utils.FontsManager;
 
 import java.awt.*;
 import java.io.File;

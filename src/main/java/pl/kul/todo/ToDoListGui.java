@@ -1,13 +1,14 @@
-import components.TaskComponent;
-import constants.CommonConstans;
-import utils.FontsManager;
-import utils.JsonFileManager;
+package pl.kul.todo;
+
+import pl.kul.todo.components.TaskComponent;
+import pl.kul.todo.constants.CommonConstans;
+import pl.kul.todo.utils.FontsManager;
+import pl.kul.todo.utils.JsonFileManager;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
 import java.util.HashMap;
 
 public class ToDoListGui extends JFrame implements ActionListener {
@@ -17,7 +18,7 @@ public class ToDoListGui extends JFrame implements ActionListener {
 
     public ToDoListGui() {
         super("ToDoApp");
-        jsonFileManager = new JsonFileManager(CommonConstans.TODOS_DATA_FILE_PATH);
+        jsonFileManager = new JsonFileManager(ToDoListGui.class.getClassLoader().getResource("data/todos.json").getPath());
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setPreferredSize(CommonConstans.GUI_SIZE);
         pack();
@@ -32,7 +33,6 @@ public class ToDoListGui extends JFrame implements ActionListener {
         // tekst banera
         JLabel bannerLabel = new JLabel("TODO List");
         bannerLabel.setFont(new FontsManager().createFont(36f));
-        //.setFont(new Font("Arial", Font.BOLD, 36));
         bannerLabel.setBounds((CommonConstans.GUI_SIZE.width - bannerLabel.getPreferredSize().width) / 2,
                 15, CommonConstans.BANNER_SIZE.width, CommonConstans.BANNER_SIZE.height);
 

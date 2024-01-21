@@ -1,4 +1,4 @@
-package constants;
+package pl.kul.todo.constants;
 
 import java.awt.*;
 

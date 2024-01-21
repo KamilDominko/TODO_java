@@ -1,6 +1,6 @@
-package utils;
+package pl.kul.todo.utils;
 
-import constants.CommonConstans;
+import pl.kul.todo.constants.CommonConstans;
 
 import java.awt.*;
 import java.io.File;
@@ -8,7 +8,7 @@ import java.io.File;
 public class FontsManager {
     public Font createFont(float size) {
         try {
-            File customFontFile = new File(CommonConstans.FONT_FILE_PATH);
+            File customFontFile = new File(FontsManager.class.getClassLoader().getResource("fonts/LEMONMILK-Light.otf").getPath());
             return Font.createFont(Font.TRUETYPE_FONT, customFontFile).deriveFont(size);
         } catch (Exception e) {
             System.out.println("Błąd: " + e);

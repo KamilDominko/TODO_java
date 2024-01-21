@@ -1,6 +1,8 @@
+package pl.kul.todo;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import utils.JsonFileManager;
+import pl.kul.todo.utils.JsonFileManager;
 
 import java.io.File;
 import java.io.IOException;
