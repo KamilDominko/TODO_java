@@ -1,2 +1,2 @@
-rootProject.name = "awsj_TODO"
+rootProject.name = "TODO_java"
 

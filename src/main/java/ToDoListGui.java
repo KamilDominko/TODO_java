@@ -1,14 +1,23 @@
+import components.TaskComponent;
+import constants.CommonConstans;
+import utils.FontsManager;
+import utils.JsonFileManager;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.HashMap;
 
 public class ToDoListGui extends JFrame implements ActionListener {
-    private JPanel taskPanel, taskComponentPanel;
+    private JPanel taskComponentPanel;
+    private JTextField taskField;
+    private final JsonFileManager jsonFileManager;
 
     public ToDoListGui() {
         super("ToDoApp");
+        jsonFileManager = new JsonFileManager(CommonConstans.TODOS_DATA_FILE_PATH);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setPreferredSize(CommonConstans.GUI_SIZE);
         pack();
@@ -22,22 +31,24 @@ public class ToDoListGui extends JFrame implements ActionListener {
     private void addGuiComponents() {
         // tekst banera
         JLabel bannerLabel = new JLabel("TODO List");
-//        bannerLabel.setFont(createFont("resources/LEMONMILK-Light.otf", 36f));
-        bannerLabel.setFont(new Font("Arial", Font.BOLD, 36));
+        bannerLabel.setFont(new FontsManager().createFont(36f));
+        //.setFont(new Font("Arial", Font.BOLD, 36));
         bannerLabel.setBounds((CommonConstans.GUI_SIZE.width - bannerLabel.getPreferredSize().width) / 2,
                 15, CommonConstans.BANNER_SIZE.width, CommonConstans.BANNER_SIZE.height);
 
         // taskpanel
-        taskPanel = new JPanel();
+        JPanel taskPanel = new JPanel();
 
         // taskcomponentpanel
         taskComponentPanel = new JPanel();
         taskComponentPanel.setLayout(new BoxLayout(taskComponentPanel, BoxLayout.Y_AXIS));
         taskPanel.add(taskComponentPanel);
 
+        getTaskComponents();
+
         // dodawanie przewijania do panelu zadań
         JScrollPane scrollPane = new JScrollPane(taskPanel);
-        scrollPane.setBounds(8, 70, CommonConstans.TASKPANEL_SIZE.width, CommonConstans.TASKPANEL_SIZE.height);
+        scrollPane.setBounds(5, 70, CommonConstans.TASKPANEL_SIZE.width, CommonConstans.TASKPANEL_SIZE.height - 100);
         scrollPane.setBorder(BorderFactory.createLoweredBevelBorder());
         scrollPane.setMaximumSize(CommonConstans.TASKPANEL_SIZE);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
@@ -47,60 +58,64 @@ public class ToDoListGui extends JFrame implements ActionListener {
         JScrollBar verticalScrollBar = scrollPane.getVerticalScrollBar();
         verticalScrollBar.setUnitIncrement(20);
 
+        // Tworzenie pola do wpisania treści zadania
+        taskField = new JTextField();
+        taskField.setFont(new FontsManager().createFont(18f));
+        taskField.setBounds(CommonConstans.GUI_SIZE.width / 10, CommonConstans.GUI_SIZE.height - 168,
+                CommonConstans.ADDTASK_BUTTON_SIZE.width, CommonConstans.ADDTASK_BUTTON_SIZE.height);
+
         // Tworzenie przycisku dodawania zadań
         JButton addTaskButton = new JButton("Add TODO");
-//        addTaskButton.setFont(createFont("resources/LEMONMILK-Light.otf", 18f));
-        addTaskButton.setFont(new Font("Arial", Font.BOLD, 18));
+        addTaskButton.setFont(new FontsManager().createFont(18f));
         addTaskButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        addTaskButton.setBounds(-5, CommonConstans.GUI_SIZE.height-88,
+        addTaskButton.setBounds(CommonConstans.GUI_SIZE.width / 10, CommonConstans.GUI_SIZE.height - 108,
                 CommonConstans.ADDTASK_BUTTON_SIZE.width, CommonConstans.ADDTASK_BUTTON_SIZE.height);
         addTaskButton.addActionListener(this);
 
         // dodaj do ramki
         this.getContentPane().add(bannerLabel);
         this.getContentPane().add(scrollPane);
+        this.getContentPane().add(taskField);
         this.getContentPane().add(addTaskButton);
     }
 
-    private Font createFont(String resource, float size){
-        // pobierz czcionkę ze ścieżki pliku
-        String filePath = getClass().getClassLoader().getResource(resource).getPath();
+    private void getTaskComponents() {
+        HashMap<String, HashMap<String, String>> todos = jsonFileManager.readFromFile();
+        todos.forEach((key, value) -> {
+            createTodoComponent(value);
+        });
+    }
 
-        // sprawdź, czy ścieżka zawiera folder ze spacjami
-        if (filePath.contains("%20")){
-            filePath = getClass().getClassLoader().getResource(resource).getPath().replaceAll("%20", " ");
+    private void createTodoComponent(HashMap<String, String> task) {
+        TaskComponent taskComponent = new TaskComponent(taskComponentPanel, task);
+        taskComponentPanel.add(taskComponent);
+
+        if (taskComponentPanel.getComponentCount() > 1) {
+            TaskComponent previousTask = (TaskComponent) taskComponentPanel.getComponent(taskComponentPanel.getComponentCount() - 2);
+            JLabel taskLabel = previousTask.getTaskLabel();
+            taskLabel.setBackground(null);
         }
 
-        // stwórz czcionkę
-        try {
-            File customFontFile = new File(filePath);
-            Font customFont = Font.createFont(Font.TRUETYPE_FONT, customFontFile).deriveFont(size);
-            return customFont;
-        }catch (Exception e){
-            System.out.println("Błąd: " + e);
-        }
-        return null;
+        // skupienie na polu zadania po utworzeniu
+        taskComponent.getTaskLabel().requestFocus();
+        repaint();
+        revalidate();
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
         String command = e.getActionCommand();
-        if (command.equalsIgnoreCase("Add TODO")){
-            // stwórz komponent zadania
-            TaskComponent taskComponent = new TaskComponent(taskComponentPanel);
-            taskComponentPanel.add(taskComponent);
+        if (command.equalsIgnoreCase("Add TODO")) {
+            HashMap<String, String> task = new HashMap<>();
+            int newTaskId = jsonFileManager.getTasksLength() + 1;
 
-            // spraw, aby poprzednie zadanie wydawało się nieaktywne
-            if (taskComponentPanel.getComponentCount() > 1){
-                TaskComponent previousTask = (TaskComponent) taskComponentPanel.getComponent(taskComponentPanel.getComponentCount() - 2);
-                previousTask.getTaskField().setBackground(null);
-            }
+            task.put("id", String.valueOf(newTaskId));
+            task.put("content", taskField.getText());
+            task.put("isActive", String.valueOf(true));
+            createTodoComponent(task);
 
-            // skupienie na polu zadania po utworzeniu
-            taskComponent.getTaskField().requestFocus();
-            repaint();
-            revalidate();
+            jsonFileManager.addTaskToFile("task" + String.valueOf(newTaskId), task);
+            taskField.setText("");
         }
-
     }
 }
